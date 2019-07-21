@@ -3,12 +3,16 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django.utils.text import slugify
+from django.conf import settings
 from django.core.urlresolvers import reverse
 import misaka
 
 from django.contrib.auth import get_user_model
+
 User = get_user_model()
+
 from django import template
+
 register = template.Library()
 
 class Group(models.Model):
@@ -24,10 +28,10 @@ class Group(models.Model):
     def save(self,*args,**kwargs):
         self.slug = slugify(self.name)
         self.description_html = misaka.html(self.description)
-        super().save(*args,**kwargs)
+        super(Group, self).save(*args,**kwargs)
     
     def get_absolute_url(self):
-        return reverse('groups:single',kwargs={'slug':self.slug})
+        return reverse("groups:single", kwargs={"slug": self.slug})
     
     class Meta:
         ordering = ['name']
@@ -35,7 +39,7 @@ class Group(models.Model):
 
 class GroupMember(models.Model):
     group = models.ForeignKey(Group, related_name='memberships')
-    user = models.ForeignKey(User, related_name='user_groups')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
     
     def __str__(self):
         return self.user.username
